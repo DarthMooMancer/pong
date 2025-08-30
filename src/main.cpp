@@ -2,15 +2,19 @@
 #include <thread>
 #include "input.hpp"
 #include "window.hpp"
-
-bool running = true;
-Input input;
-Window window;
-std::thread input_thread(&Input::get_input, &input, std::ref(running));
+#include "elements.hpp"
 
 int main() {
+	bool running = true;
+	Input input;
+	Window window;
+	Paddle left(1);
+	Paddle right(18);
+	std::thread input_thread(&Input::get_input, &input, std::ref(running), std::ref(left), std::ref(right));
 	while (running) {
-		window.update_display();
+		window.update_display(left, right);
+		left.get_new_pos(1);
+		right.get_new_pos(18);
 	}
 
 	input_thread.join();

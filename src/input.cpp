@@ -1,25 +1,39 @@
+#include "globals.hpp"
 #include "input.hpp"
 #include <ncurses.h>
 
-void Input::get_input(bool &running) {
+void Input::get_input(bool &running, Paddle &a, Paddle &b) {
 	while(running) {
 		initscr();
 		cbreak();
 		noecho();
 
 		m_getch = getch();
+
 		endwin();
-		// if(m_current_key != 1 && (m_getch == 'a' || m_getch == 'D')) {
-		// 	direction = m_current_key = -1;
-		// } else if(m_current_key != - 1 && (m_getch == 'd' || m_getch == 'C')) {
-		// 	direction = m_current_key = 1;
-		// } else if(m_current_key != -2 && (m_getch == 's' || m_getch == 'B')) {
-		// 	direction = m_current_key = 2;
-		// } else if(m_current_key != 2 && (m_getch == 'w' || m_getch == 'A')) {
-		// 	direction = m_current_key = -2;
+		if(m_getch == 'w') {
+			if(a.m_nodes[0].m_row > 0) {
+				a.m_nodes[0].m_row--;
+				m_getch = ' ';
+			}
+		} else if(m_getch == 's') {
+			if(a.m_nodes[3].m_row < ROW - 1) {
+				a.m_nodes[0].m_row++;
+				m_getch = ' ';
+			}
+		} if(m_getch == 'A') {
+			if(b.m_nodes[0].m_row > 0) {
+				b.m_nodes[0].m_row--;
+				m_getch = ' ';
+			}
+		} else if(m_getch == 'B') {
+			if(b.m_nodes[3].m_row < ROW - 1) {
+				b.m_nodes[0].m_row++;
+				m_getch = ' ';
+			}
+		}
 		if(m_getch == 'q') {
 			running = false;
 		}
 	}
-	
 }
