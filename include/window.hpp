@@ -6,9 +6,7 @@
 #include "elements.hpp"
 
 struct Window {
-	// Window();
-	std::array<std::array<char, COL>, ROW> m_board;
-	// void update_display();
-	void update_display(Paddle &a, Paddle &b);
+	std::array<std::array<char, COL>, ROW> m_board = {};
+	void update_display(Paddle &left, Paddle &right, Ball &ball, int &time);
 };
 #endif

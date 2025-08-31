@@ -9,6 +9,7 @@ set(SOURCES
 	src/input.cpp
 	src/window.cpp
 	src/elements.cpp
+	src/timer.cpp
 )
 
 add_executable(pong ${SOURCES})
