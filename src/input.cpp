@@ -17,7 +17,7 @@ void Input::get_input(bool &running, Paddle &a, Paddle &b) {
 				m_getch = ' ';
 			}
 		} else if(m_getch == 's') {
-			if(a.m_nodes[3].m_row < ROW - 1) {
+			if(a.m_nodes[a._size - 1].m_row < ROW - 1) {
 				a.m_nodes[0].m_row++;
 				m_getch = ' ';
 			}
@@ -27,7 +27,7 @@ void Input::get_input(bool &running, Paddle &a, Paddle &b) {
 				m_getch = ' ';
 			}
 		} else if(m_getch == 'B') {
-			if(b.m_nodes[3].m_row < ROW - 1) {
+			if(b.m_nodes[b._size - 1].m_row < ROW - 1) {
 				b.m_nodes[0].m_row++;
 				m_getch = ' ';
 			}

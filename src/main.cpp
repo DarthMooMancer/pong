@@ -4,6 +4,7 @@
 #include "timer.hpp"
 #include "window.hpp"
 #include "elements.hpp"
+#include "globals.hpp"
 
 int main() {
 	bool running = true;
@@ -11,7 +12,7 @@ int main() {
 	Timer timer;
 	Window window;
 	Paddle left(1);
-	Paddle right(19);
+	Paddle right(COL - 2);
 	Ball ball;
 	int time = 90;
 	bool timer_active = true;
@@ -20,7 +21,7 @@ int main() {
 	while (running) {
 		window.update_display(left, right, ball, time);
 		left.get_new_pos(1);
-		right.get_new_pos(19);
+		right.get_new_pos(COL - 2);
 		ball.get_new_pos();
 		ball.check_collision();
 		left.check_collision(ball);
