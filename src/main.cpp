@@ -7,48 +7,55 @@
 #include "globals.hpp"
 
 int main() {
-	bool running = true;
+	int time_seconds = 5;
 	Input input;
 	Timer timer;
 	Window window;
-	Paddle left(1);
-	Paddle right(COL - 2);
-	Ball ball;
-	int time = 90;
-	bool timer_active = true;
-	std::thread timer_thread(&Timer::decrement_time, &timer, std::ref(time), std::ref(running), std::ref(timer_active));
-	std::thread input_thread(&Input::get_input, &input, std::ref(running), std::ref(left), std::ref(right));
+	bool running = true;
+	Point* segments[8] = {};
+
+	Paddle left = create_paddle(segments, 0, 3, 1, '|');
+	Paddle right = create_paddle(segments, 3, 6, COL - 2, '|');
+	Ball ball = create_ball(segments, (ROW / 2), (COL / 2), 'o', 8);
+
+	std::thread timer_thread([&] { timer.decrement_time(time_seconds, running); } );
+	std::thread input_thread([&] { input.get_input(left.m_dir, right.m_dir, running); } );
+
 	while (running) {
-		window.update_display(left, right, ball, time);
-		left.get_new_pos(1);
-		right.get_new_pos(COL - 2);
-		ball.get_new_pos();
-		ball.check_collision();
-		left.check_collision(ball);
-		right.check_collision(ball);
-		if (ball.m_goal && ball.m_origin.m_col < (ROW / 2)) {
-			ball.m_goal = false;
-			right.m_score++;
-			ball.m_origin.assign(5, 10);
-		} else if(ball.m_goal && ball.m_origin.m_col > (ROW / 2)) {
-			ball.m_goal = false;
-			left.m_score++;
-			ball.m_origin.assign(5, 10);
+		left.determine_new_position(window.m_board);
+		right.determine_new_position(window.m_board);
+		if(!ball.determine_next_valid_position(window.m_board)) {
+			if(ball.m_origin->m_col < 1) {
+				left.m_score++;
+			} else if(ball.m_origin->m_col > COL - 2) {
+				right.m_score++;
+			}
+			ball.m_origin->m_row = ROW / 2;
+			ball.m_origin->m_col = COL / 2;
 		}
-		if(!timer_active) {
-			std::cout << "\033[H" << std::flush; // Clear screen
+		on_collision_with_ball(segments, ball, 7);
+		if(time_seconds <= 0) {
 			if(left.m_score > right.m_score) {
-				std::cout << "Player 1 wins!" << std::endl; 
+				std::cout << "Player 1 wins!\n"; 
 			} if(left.m_score < right.m_score) {
-				std::cout << "Player 2 wins!" << std::endl; 
+				std::cout << "Player 2 wins!\n"; 
 			} if(left.m_score == right.m_score) {
-				std::cout << "It's a tie!" << std::endl; 
+				std::cout << "It's a tie!\n";
 			}
 			running = false;
 		}
+		window.clear_display();
+		window.update_display(segments);
+		window.draw_display(130);
+		std::cout << "Time left: " << time_seconds << ", Score ( " << left.m_score << " : " << right.m_score << " )\n";
 	}
 
 	timer_thread.join();
 	input_thread.join();
+	for(int i = 8; i > 0; i--) {
+		if(segments[i] != nullptr) {
+			delete segments[i];
+		}
+	}
 	return 0;
 }

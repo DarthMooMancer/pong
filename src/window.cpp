@@ -3,20 +3,29 @@
 #include <chrono>
 #include <thread>
 
-void Window::update_display(Paddle &left, Paddle &right, Ball &ball, int &time) {
-	for(std::array<char, COL> &row : m_board) { row.fill('.'); }
-	for(int i = 0; i < left._size; i++) {
-		m_board[left.m_nodes[i].m_row][left.m_nodes[i].m_col] = '|';
-		m_board[right.m_nodes[i].m_row][right.m_nodes[i].m_col] = '|';
+void Window::clear_display() {
+	for(int i = 0; i < ROW; i++) {
+		for(int j = 0; j < COL; j++) {
+			m_board[i][j] = nullptr;
+		}
 	}
-	m_board[ball.m_origin.m_row][ball.m_origin.m_col] = '*';
-	std::cout << "\033[H" << std::flush; // Clear screen
-	for(std::array<char, COL> &row : m_board) {
-		for(char &col : row) {
-			std::cout << col << " ";
+}
+
+void Window::draw_display(int milliseconds) {
+	for(int i = 0; i < ROW; i++) {
+		for(int j = 0; j < COL; j++) {
+			if(m_board[i][j] == nullptr) std::cout << ". ";
+			else std::cout << m_board[i][j]->m_symbol << " ";
 		}
 		std::cout << "\r\n";
 	}
-	std::cout << "Time left: " << time << ", Score ( " << left.m_score << " : " << right.m_score << " )" << std::endl;
-	std::this_thread::sleep_for(std::chrono::milliseconds(130)); // 1000 / fps; 200ms = 5fps
+	std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds)); // 1000 / fps; 200ms = 5fps
+}
+
+void Window::update_display(Point** segments) {
+	std::cout << "\033[H" << std::flush; // Clear screen
+	for(int i = 10; i >= 0; i--) {
+		if(segments[i] == nullptr) continue;
+		m_board[segments[i]->m_row][segments[i]->m_col] = segments[i];
+	}
 }

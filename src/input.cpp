@@ -1,39 +1,24 @@
-#include "globals.hpp"
 #include "input.hpp"
+#include <iostream>
 #include <ncurses.h>
 
-void Input::get_input(bool &running, Paddle &a, Paddle &b) {
+void Input::get_input(enum Direction &left, enum Direction &right, bool &running) {
 	while(running) {
 		initscr();
 		cbreak();
 		noecho();
 
 		m_getch = getch();
-
 		endwin();
-		if(m_getch == 'w') {
-			if(a.m_nodes[0].m_row > 0) {
-				a.m_nodes[0].m_row--;
-				m_getch = ' ';
-			}
-		} else if(m_getch == 's') {
-			if(a.m_nodes[a._size - 1].m_row < ROW - 1) {
-				a.m_nodes[0].m_row++;
-				m_getch = ' ';
-			}
-		} if(m_getch == 'A') {
-			if(b.m_nodes[0].m_row > 0) {
-				b.m_nodes[0].m_row--;
-				m_getch = ' ';
-			}
-		} else if(m_getch == 'B') {
-			if(b.m_nodes[b._size - 1].m_row < ROW - 1) {
-				b.m_nodes[0].m_row++;
-				m_getch = ' ';
-			}
-		}
-		if(m_getch == 'q') {
-			running = false;
-		}
+
+		if(m_getch == 119) left = UP;
+		else if(m_getch == 115) left = DOWN;
+
+		if(m_getch == 65) right = UP;
+		else if(m_getch == 66) right = DOWN;
+
+		if(m_getch == 113) running = false;
+
+		m_getch = 0;
 	}
 }
