@@ -12,6 +12,7 @@ void Window::clear_display() {
 }
 
 void Window::draw_display(int milliseconds) {
+	std::cout << "\033[H" << std::flush; // Clear screen
 	for(int i = 0; i < ROW; i++) {
 		for(int j = 0; j < COL; j++) {
 			if(m_board[i][j] == nullptr) std::cout << ". ";
@@ -22,10 +23,9 @@ void Window::draw_display(int milliseconds) {
 	std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds)); // 1000 / fps; 200ms = 5fps
 }
 
-void Window::update_display(Point** segments) {
-	std::cout << "\033[H" << std::flush; // Clear screen
+void Window::update_display(vec2** segments) {
 	for(int i = 10; i >= 0; i--) {
 		if(segments[i] == nullptr) continue;
-		m_board[segments[i]->m_row][segments[i]->m_col] = segments[i];
+		m_board[segments[i]->y][segments[i]->x] = segments[i];
 	}
 }

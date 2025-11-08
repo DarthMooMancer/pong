@@ -7,12 +7,12 @@
 #include "globals.hpp"
 
 int main() {
-	int time_seconds = 5;
+	int time_seconds = 30;
 	Input input;
 	Timer timer;
 	Window window;
 	bool running = true;
-	Point* segments[8] = {};
+	vec2* segments[8] = {};
 
 	Paddle left = create_paddle(segments, 0, 3, 1, '|');
 	Paddle right = create_paddle(segments, 3, 6, COL - 2, '|');
@@ -24,14 +24,14 @@ int main() {
 	while (running) {
 		left.determine_new_position(window.m_board);
 		right.determine_new_position(window.m_board);
-		if(!ball.determine_next_valid_position(window.m_board)) {
-			if(ball.m_origin->m_col < 1) {
+		if(!ball.determine_next_valid_position()) {
+			if(ball.m_origin->x < 1) {
 				left.m_score++;
-			} else if(ball.m_origin->m_col > COL - 2) {
+			} else if(ball.m_origin->x > COL - 2) {
 				right.m_score++;
 			}
-			ball.m_origin->m_row = ROW / 2;
-			ball.m_origin->m_col = COL / 2;
+			ball.m_origin->y = ROW / 2;
+			ball.m_origin->x = COL / 2;
 		}
 		on_collision_with_ball(segments, ball, 7);
 		if(time_seconds <= 0) {

@@ -5,9 +5,9 @@
 #include "elements.hpp"
 
 struct Window {
-	Point* m_board[ROW][COL] = {};
+	vec2* m_board[ROW][COL] = {};
 	void clear_display();
 	void draw_display(int milliseconds);
-	void update_display(Point** segments);
+	void update_display(vec2** segments);
 };
 #endif
