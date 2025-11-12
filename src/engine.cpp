@@ -79,7 +79,6 @@ void Engine::run() {
 			last_clock_update = current_time;
 		}
 		std::cout << std::format("Time left: {}, Score ({}, {})\n", clock, score.x, score.y);
-		// std::cout << "Time left: " << clock << ", Score ( " << score.x << " : " << score.y << " )\n";
 		std::this_thread::sleep_for(std::chrono::milliseconds(150)); // 1000 / fps; 200ms = 5fps
 	}
 }
@@ -108,10 +107,8 @@ bool Engine::exit_process() {
 }
 
 bool Engine::move_ball() {
-	if(ball.y <= 0 || ball.y >= ROW - 1) {
-		ball_direction.y *= -1;
-	}
-	if(ball.x <= 0 || ball.x >= COL - 1) return false;
+	if(ball.y <= 0 || ball.y >= ROW - 1) { ball_direction.y *= -1; }
+	else if(ball.x <= 0 || ball.x >= COL - 1) return false;
 	ball.x += ball_direction.x;
 	ball.y += ball_direction.y;
 	return true;
