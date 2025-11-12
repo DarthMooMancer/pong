@@ -2,6 +2,7 @@
 #define ENGINE_HPP
 
 #include <array>
+#include <chrono>
 #include <ncurses.h>
 
 constexpr int ROW = 15;
@@ -43,12 +44,13 @@ public:
 
 private:
 	Window win;
-	int time_seconds { 30 };
+	int clock { 30 };
 	vec2 score { 0, 0 };
 	vec2 ball { (COL / 2), (ROW / 2) };
 	vec2 ball_direction { 1, 1 };
 	Paddle p1 { { 1, (ROW / 2) - (SIZE / 2) } };
 	Paddle p2 { { COL - 2, (ROW / 2) - (SIZE / 2) } };
+	std::chrono::steady_clock::time_point last_clock_update;
 
 	bool exit_process();
 	bool process_input();

@@ -52,6 +52,7 @@ Engine::Engine() {
 	noecho();
 	curs_set(0);
 	nodelay(stdscr, true);
+	last_clock_update = std::chrono::steady_clock::now();
 }
 
 void Engine::on_collision_with_ball() {
@@ -82,7 +83,13 @@ void Engine::run() {
 		win.clear_display();
 		win.update_display(ball, p1, p2);
 		win.draw_display();
-		std::cout << "Time left: " << time_seconds << ", Score ( " << score.a << " : " << score.b << " )\n";
+		auto current_time = std::chrono::steady_clock::now();
+		auto elapsed_time = std::chrono::duration_cast<std::chrono::seconds>(current_time - last_clock_update).count();
+		if(elapsed_time >= 1) {
+			clock -= elapsed_time;
+			last_clock_update = current_time;
+		}
+		std::cout << "Time left: " << clock << ", Score ( " << score.a << " : " << score.b << " )\n";
 		std::this_thread::sleep_for(std::chrono::milliseconds(150)); // 1000 / fps; 200ms = 5fps
 	}
 }

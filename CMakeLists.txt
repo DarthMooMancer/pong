@@ -7,7 +7,6 @@ project(pong)
 set(SOURCES
 	src/main.cpp
 	src/engine.cpp
-	src/timer.cpp
 )
 add_executable(pong ${SOURCES})
 
