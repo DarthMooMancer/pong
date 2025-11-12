@@ -1,8 +1,8 @@
 #include <engine.hpp>
 #include <iostream>
-#include <chrono>
-#include <thread>
 #include <ranges>
+#include <algorithm>
+#include <thread>
 
 void Window::clear_display() {
 	for(auto &row : view) {
@@ -10,40 +10,43 @@ void Window::clear_display() {
 	}
 }
 
-void Window::draw_display() {
+void Window::draw_display() const {
 	std::cout << "\033[H" << std::flush; // Clear screen
+	std::string output;
 	for(const auto &row : view) {
 		for(const auto val : row) {
-			if(val == '.') std::cout << ". ";
-			else std::cout << val << " ";
+			output += std::isprint(val) ? val : '.';
+			output += ' ';
 		}
-		std::cout << "\r\n";
+		output.append("\r\n");
 	}
+	std::cout << output;
 }
 
 void Window::update_display(const vec2 &ball, const Paddle &p1, const Paddle &p2) {
-	view[ball.b][ball.a] = '*';
+	view[ball.y][ball.x] = '*';
 	for(auto &i : p1.nodes) {
-		view[i.b][i.a] = p1.symbol;
+		view[i.y][i.x] = p1.symbol;
 	}
 	for(auto &i : p2.nodes) {
-		view[i.b][i.a] = p2.symbol;
+		view[i.y][i.x] = p2.symbol;
 	}
 }
 
 Paddle::Paddle(const vec2 init_pos) {
 	for(int i : std::ranges::views::iota(0, (int)nodes.size())) {
-		nodes[i].set(init_pos.a, init_pos.b + i);
+		nodes[i].set(init_pos.x, init_pos.y + i);
 	}
 }
 
 void Paddle::move() {
-	if(dir == Direction::UP && nodes.front().b > 0) {
-		for(auto &i : nodes) { i.b--; }
-	} else if(dir == Direction::DOWN && nodes.back().b < ROW - 1) {
-		for(auto &i : nodes) { i.b++; }
+	if(dir == Dir::UP && nodes.front().y > 0) {
+		for(auto &i : nodes) { i.y--; }
 	}
-	dir = Direction::NONE;
+	else if(dir == Dir::DOWN && nodes.back().y < ROW - 1) {
+		for(auto &i : nodes) { i.y++; }
+	}
+	dir = Dir::NONE;
 }
 
 Engine::Engine() {
@@ -52,29 +55,15 @@ Engine::Engine() {
 	noecho();
 	curs_set(0);
 	nodelay(stdscr, true);
+	keypad(stdscr, true);
 	last_clock_update = std::chrono::steady_clock::now();
-}
-
-void Engine::on_collision_with_ball() {
-	for(const auto &i : p1.nodes) {
-		if(i == ball) {
-			if (ball_direction.a == 1) ball_direction.a = -1;
-			else ball_direction.a = 1;
-		}
-	}
-	for(const auto &i : p2.nodes) {
-		if(i == ball) {
-			if (ball_direction.a == 1) ball_direction.a = -1;
-			else ball_direction.a = 1;
-		}
-	}
 }
 
 void Engine::run() {
 	while(process_input() && exit_process()) {
 		if(!move_ball()) {
-			if(ball.a < 1) { score.b++; }
-			else if(ball.a > COL - 2) { score.a++; }
+			if(ball.x < 1) { score.y++; }
+			else if(ball.x > COL - 2) { score.x++; }
 			ball.set(COL / 2, ROW / 2);
 		}
 		p1.move();
@@ -89,28 +78,29 @@ void Engine::run() {
 			clock -= elapsed_time;
 			last_clock_update = current_time;
 		}
-		std::cout << "Time left: " << clock << ", Score ( " << score.a << " : " << score.b << " )\n";
+		std::cout << std::format("Time left: {}, Score ({}, {})\n", clock, score.x, score.y);
+		// std::cout << "Time left: " << clock << ", Score ( " << score.x << " : " << score.y << " )\n";
 		std::this_thread::sleep_for(std::chrono::milliseconds(150)); // 1000 / fps; 200ms = 5fps
 	}
 }
 
 bool Engine::process_input() {
-	int ch;
-	while((ch = getch()) != ERR) {
-		if(ch == 'q') { return false; }
-		if(ch == 'w') { p1.dir = Direction::UP; }
-		else if(ch == 's') { p1.dir = Direction::DOWN; }
+	int key;
+	while((key = getch()) != ERR) {
+		if(key == 'q') { return false; }
+		if(key == 'w') { p1.dir = Paddle::Dir::UP; }
+		else if(key == 's') { p1.dir = Paddle::Dir::DOWN; }
 
-		if(ch == 65) { p2.dir = Direction::UP; }
-		else if(ch == 66) { p2.dir = Direction::DOWN; }
+		if(key == KEY_UP) { p2.dir = Paddle::Dir::UP; }
+		else if(key == KEY_DOWN) { p2.dir = Paddle::Dir::DOWN; }
 	}
 	return true;
 }
 
 
 bool Engine::exit_process() {
-	if(time_seconds <= 0) {
-		std::cout << ((score.a > score.b ) ? "Player 1 wins\n" : (score.a == score.b) ? "It's a tie\n" : "Player 2 wins\n");
+	if(clock <= 0) {
+		std::cout << ((score.x > score.y ) ? "Player 1 wins\n" : (score.x == score.y) ? "It's a tie\n" : "Player 2 wins\n");
 		std::this_thread::sleep_for(std::chrono::seconds(1));
 		return false;
 	}
@@ -118,15 +108,18 @@ bool Engine::exit_process() {
 }
 
 bool Engine::move_ball() {
-	if(ball.b <= 0 || ball.b >= ROW - 1) {
-		if (ball_direction.b == 1) ball_direction.b = -1;
-		else ball_direction.b = 1;
+	if(ball.y <= 0 || ball.y >= ROW - 1) {
+		ball_direction.y *= -1;
 	}
-	if(ball.a <= 0 || ball.a >= COL - 1) return false;
-	if(ball_direction.a == 1) { ball.a++; }
-	else if(ball_direction.a == -1) { ball.a--; }
-
-	if(ball_direction.b == 1) { ball.b++; }
-	else if(ball_direction.b == -1) { ball.b--; }
+	if(ball.x <= 0 || ball.x >= COL - 1) return false;
+	ball.x += ball_direction.x;
+	ball.y += ball_direction.y;
 	return true;
+}
+
+void Engine::on_collision_with_ball() {
+	if(std::ranges::any_of(p1.nodes, [&](const auto& node) { return node == ball; })
+		|| std::ranges::any_of(p2.nodes, [&](const auto& node) { return node == ball; })) {
+		ball_direction.x *= -1;
+	} 
 }
